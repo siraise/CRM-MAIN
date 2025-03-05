@@ -59,14 +59,14 @@ function OutputClients($clients) {
         $created_at = $client['created_at'];
 
         
-        $QueryParams = $_GET;
-        $QueryParams['send-email'] = $email;
-        $QueryParams = convertParams($QueryParams);
+        // $QueryParams = $_GET;
+        // $QueryParams['send-email'] = $email;
+        // $QueryParams = convertParams($QueryParams);
 
         echo "<tr>
                 <td>$id</td>
                 <td>$name</td>
-                <td><a href='?$QueryParams'>$email</a></td>
+                <td><a href='?send-email=$email'>$email</a></td>
                 <td>$phone</td>
                 <td>$birthday</td>
                 <td>$created_at</td>
@@ -80,7 +80,7 @@ function OutputClients($clients) {
                         <button type='submit' class='date-submit-btn'>Сформировать</button>
                     </form>
                 </td>
-                <td onclick=\"MicroModal.show('edit-modal')\"><i class='fa fa-pencil'></i></td>
+                <td onclick=\"MicroModal.show('edit-modal')\"><a href='?edit-user = $id'><i class='fa fa-pencil'></i></a></td>
                 <td><a href='api/clients/ClientsDelete.php?id=$id'><i class='fa fa-trash'></i></a></td>
             </tr>";
     }
