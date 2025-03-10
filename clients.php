@@ -14,7 +14,6 @@ require_once 'api/helpers/InputDefaultValue.php';
 require_once 'api/clients/ClientsSearch.php';
 
 AuthCheck('', 'login.php');
-
 ?>
 
 <!DOCTYPE html>
@@ -229,19 +228,45 @@ AuthCheck('', 'login.php');
                 <button class="modal__close" aria-label="Close modal" onclick="clearUrlAndClose()" data-micromodal-close></button>
             </header>
             <main class="modal__content">
-                <?php
-                $fullname = $email = $phone = "";
-                if (isset($_GET['edit-user']) && !empty($_GET['edit-user'])) {
-                    $user_id = $_GET['edit-user'];
-                    // Получаем данные из БД (пример)
-                    // $user = getUserFromDB($user_id);
-                    $fullname = "Пример Имя"; // $user['fullname'];
-                    $email = "example@email.com"; // $user['email'];
-                    $phone = "+79999999999"; // $user['phone'];
-                }
-                ?>
+            <?php
+$fullname = $email = $phone = "";
+
+// Подключение к БД
+$host = "127.0.0.1"; // Или ваш хост
+$dbname = "crm"; // Имя базы данных
+$username = "root"; // Ваш логин
+$password = ""; // Ваш пароль
+
+$conn = new mysqli($host, $username, $password, $dbname);
+if ($conn->connect_error) {
+    die("Ошибка подключения: " . $conn->connect_error);
+}
+
+if (isset($_GET['edit-user']) && !empty($_GET['edit-user'])) {
+    $user_id = intval($_GET['edit-user']); // Приводим к числу для безопасности
+
+    // SQL-запрос на получение данных пользователя
+    $sql = "SELECT name, email, phone FROM clients WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    // Проверяем, найден ли пользователь
+    if ($result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+        $fullname = $user['name'];
+        $email = $user['email'];
+        $phone = $user['phone'];
+    }
+
+    $stmt->close();
+}
+
+$conn->close();
+?>
                 
-                <form class="modal__form" action="update_user.php" method="POST">
+                <form class="modal__form" action="api/clients/EditClients.php" method="POST">
                     <input type="hidden" name="user_id" value="<?php echo htmlspecialchars($_GET['edit-user']); ?>">
                     
                     <div class="modal__form-group">
@@ -348,7 +373,21 @@ AuthCheck('', 'login.php');
         </div>
     </div>
 </div>
-
+<button class="support-btn"><i class="fa fa-question-circle fa-3x" aria-hidden="true"></i></button>
+<div class="support-create-tickets">
+    <button class="close-create-ticket">X</button>
+        <form action="api/tickets/CreateTickets.php" method="POST">
+                        <label for="type">Тип обращение</label>
+                       <select name="type" id="type">
+                        <option value="tech">Техническая неполадка</option>
+                        <option value="crm">Проблема с crm</option>
+                       </select>
+                        <label for="message">Текст обращения</label>
+                        <textarea name="message" id="message"></textarea>
+                        <input type="file" id="files" name="files">
+                        <button type="submit">Создать тикет</button>
+        </form>
+</div>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     let params = new URLSearchParams(window.location.search);

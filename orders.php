@@ -210,211 +210,93 @@ if (isset($_SESSION['search_status'])) {
             </div>
         </section>
     </main>
-    <div class="modal micromodal-slide" id="add-modal" aria-hidden="true">
-        <div class="modal__overlay" tabindex="-1" data-micromodal-close>
-          <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
-            <header class="modal__header">
-              <h2 class="modal__title" id="modal-1-title">
-                Создание заказа
-              </h2>
-              <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
-            </header>
-            <main class="modal__content" id="modal-1-content">
-                <form action="api/orders/AddOrders.php" method="POST" class="modal__form">
-                    <div class="modal__form-group">
-                        <label for="client">Клиент</label>
-                        <select class="main__select" name="client" id="client">
-                        <option value="new">Новый пользователь</option>
-                            <?php
-                                $users = $DB->query("SELECT id, name FROM clients")->fetchAll();
-                                foreach ($users as $key => $user) {
-                                    $id = $user['id'];
-                                    $name = $user['name'];
-                                    echo "<option value='$id'>$name</option>";
-                                }
-                            ?>
-                        </select>
-                    </div>
-                    <div class="modal__form-group group-email" id="email-field">
-                        <label for="email">Почта</label>
-                        <input type="email" id="email" name="email" placeholder="Введите почту....">
-                    </div>
-                    <div class="modal__form-group">
-                        <label for="products">Товар</label>
-                        <select class="main__select" name="products[]" id="products" multiple>
-                        <?php
-                                $products = $DB->query("SELECT id, name, price, stock FROM products WHERE stock > 0")->fetchAll();
-                                foreach ($products as $key => $product) {
-                                    $id = $product['id'];
-                                    $name = $product['name'];
-                                    $price = $product['price'];
-                                    $stock = $product['stock'];
-                                    echo "<option value='$id'>$name - {$price}₽ - ({$stock} шт.)</option>";
-                                }
-                            ?>
-                        </select>
-                    </div>
-                    <div class="modal__form-actions">
-                        <button type="submit" class="modal__btn modal__btn-primary">Создать</button>
-                        <button type="button" class="modal__btn modal__btn-secondary" data-micromodal-close>Отменить</button>
-                    </div>
-                </form>
-            </main>
-          </div>
-        </div>
-      </div>
-      <div class="modal micromodal-slide" id="delete-modal" aria-hidden="true">
-        <div class="modal__overlay" tabindex="-1" data-micromodal-close>
-            <div class="modal__container" role="dialog" aria-modal="true">
-                <header class="modal__header">
-                    <h2 class="modal__title">Удалить заказ?</h2>
-                    <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
-                </header>
-                <main class="modal__content">
-                    <p>Вы уверены, что хотите удалить заказ?</p>
-                    <button class="modal__btn modal__btn-danger">Удалить</button>
-                    <button class="modal__btn" data-micromodal-close>Отменить</button>
-                </main>
-            </div>
-        </div>
-    </div>
-    <div class="modal micromodal-slide" id="edit-modal" aria-hidden="true">
-        <div class="modal__overlay" tabindex="-1" data-micromodal-close>
-          <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
-            <header class="modal__header">
-              <h2 class="modal__title" id="modal-1-title">
-                Редактировать клиента
-              </h2>
-              <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
-            </header>
-            <main class="modal__content" id="modal-1-content">
-                <form class="modal__form">
-                    <div class="modal__form-group">
-                        <label for="fullname">ФИО</label>
-                        <input type="text" id="fullname" name="fullname" required>
-                    </div>
-                    <div class="modal__form-group">
-                        <label for="email">Почта</label>
-                        <input type="email" id="email" name="email" required>
-                    </div>
-                    <div class="modal__form-group">
-                        <label for="phone">Телефон</label>
-                        <input type="tel" id="phone" name="phone" required>
-                    </div>
-                    <div class="modal__form-actions">
-                        <button type="submit" class="modal__btn">Сохранить</button>
-                        <button type="button" class="modal__btn" data-micromodal-close>Отменить</button>
-                    </div>
-                </form>
-            </main>
-          </div>
-        </div>
-      </div>
-      <div class="modal micromodal-slide" id="history-modal" aria-hidden="true">
+
+    <!-- Модальное окно для редактирования статуса заказа -->
+    <div class="modal micromodal-slide 
+        <?php 
+            if(isset($_GET['edit-order']) && !empty($_GET['edit-order']) && isset($_SESSION['show_modal']) && $_SESSION['show_modal']) {
+                echo 'open';
+                unset($_SESSION['show_modal']); // Сбрасываем флаг после открытия
+            }
+        ?>" id="edit-order-modal" aria-hidden="true">
+        
         <div class="modal__overlay" tabindex="-1" data-micromodal-close>
             <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
                 <header class="modal__header">
                     <h2 class="modal__title" id="modal-1-title">
-                        История покупок
+                        Редактировать статус заказа
                     </h2>
-                    <small>Фамилия Имя Отчество</small>
-                    <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
-                </header>
-                <main class="modal__content" id="modal-1-content">
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th>ID заказа</th>
-                                <th>Товар</th>
-                                <th>Количество</th>
-                                <th>Цена</th>
-                                <th>Дата</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>Товар 1</td>
-                                <td>2</td>
-                                <td>1000₽</td>
-                                <td>12.01.2024</td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>Товар 2</td>
-                                <td>1</td>
-                                <td>500₽</td>
-                                <td>15.01.2024</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </main>
-            </div>
-        </div>
-    </div>
-    <div class="modal micromodal-slide" id="details-modal" aria-hidden="true">
-        <div class="modal__overlay" tabindex="-1" data-micromodal-close>
-            <div class="modal__container" role="dialog" aria-modal="true">
-                <header class="modal__header">
-                    <h2 class="modal__title">Информация о заказе #<span id="order-id"></span></h2>
-                    <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+                    <button class="modal__close" aria-label="Close modal" onclick="clearUrlAndClose()" data-micromodal-close></button>
                 </header>
                 <main class="modal__content">
-                    <div class="order-details">
-                        <p><strong>Клиент:</strong> <span id="client-name"></span></p>
-                        <p><strong>Дата заказа:</strong> <span id="order-date"></span></p>
-                        <p><strong>Общая сумма:</strong> <span id="order-total"></span>₽</p>
-                        
-                        <h3>Состав заказа:</h3>
-                        <table class="details-table">
-                            <thead>
-                                <tr>
-                                    <th>Товар</th>
-                                    <th>Количество</th>
-                                    <th>Цена</th>
-                                    <th>Сумма</th>
-                                </tr>
-                            </thead>
-                            <tbody id="order-items">
-                            </tbody>
-                        </table>
-                    </div>
-                </main>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal micromodal-slide
-        <?php
-        if (isset($_SESSION['orders_error']) && 
-        !empty($_SESSION['orders_error'])) {
-            echo 'open';
-        }
-        ?>
-    " id="error-modal" aria-hidden="true">
-        <div class="modal__overlay" tabindex="-1" data-micromodal-close>
-            <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
-                <header class="modal__header">
-                    <h2 class="modal__title" id="modal-1-title">
-                        Ошибка!
-                    </h2>   
-                    <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
-                </header>
-                <main class="modal__content" id="modal-1-content">
                 <?php
-                if (isset($_SESSION['orders_error'])
-                && !empty($_SESSION['orders_error'])) {
-                    echo $_SESSION['orders_error'];
+                $status = "";
 
-                    $_SESSION['orders_error'] = '';
+                // Подключение к БД
+                $host = "127.0.0.1"; // Или ваш хост
+                $dbname = "crm"; // Имя базы данных
+                $username = "root"; // Ваш логин
+                $password = ""; // Ваш пароль
+
+                $conn = new mysqli($host, $username, $password, $dbname);
+                if ($conn->connect_error) {
+                    die("Ошибка подключения: " . $conn->connect_error);
                 }
+
+                if (isset($_GET['edit-order']) && !empty($_GET['edit-order'])) {
+                    $order_id = intval($_GET['edit-order']); // Приводим к числу для безопасности
+
+                    // SQL-запрос на получение статуса заказа
+                    $sql = "SELECT status FROM orders WHERE id = ?";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param("i", $order_id);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+
+                    // Проверяем, найден ли заказ
+                    if ($result->num_rows > 0) {
+                        $order = $result->fetch_assoc();
+                        $status = $order['status'];
+                    }
+                    $stmt->close();
+                }
+                $conn->close();
                 ?>
+                <form class="modal__form" action="api/orders/EditOrders.php" method="POST">
+                    <input type="hidden" name="order_id" value="<?php echo htmlspecialchars($_GET['edit-order']); ?>">
+                    
+                    <div class="modal__form-group">
+                        <label for="status">Статус</label>
+                        <select id="status" name="status" required>
+                            <option value="1" <?php echo ($status == 1) ? 'selected' : ''; ?>>Активный</option>
+                            <option value="0" <?php echo ($status == 0) ? 'selected' : ''; ?>>Неактивный</option>
+                        </select>
+                    </div>
+                    
+                    <div class="modal__form-actions">
+                        <button type="submit" class="modal__btn modal__btn-primary">Сохранить</button>
+                        <button type="button" class="modal__btn modal__btn-secondary" onclick="clearUrlAndClose()" data-micromodal-close>Отменить</button>
+                    </div>
+                </form>
                 </main>
             </div>
         </div>
     </div>
     <script defer src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
-    <script defer src="scripts/initClientsModal.js"></script>
     <script defer src="scripts/orders.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let params = new URLSearchParams(window.location.search);
+            if (params.has("edit-order")) {
+                MicroModal.show("edit-order-modal");
+            }
+        });
+
+        function clearUrlAndClose() {
+            let newUrl = window.location.origin + window.location.pathname;
+            window.history.pushState({}, document.title, newUrl);
+            MicroModal.close("edit-order-modal");
+        }
+    </script>
 </body>
 </html>
