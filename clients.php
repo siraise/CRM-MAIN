@@ -42,6 +42,19 @@ AuthCheck('', 'login.php');
                 <li><a href="clients.php">Клиенты</a></li>
                 <li><a href="product.php">Товары</a></li>
                 <li><a href="orders.php">Заказы</a></li>
+                <?php
+
+// Дописать и раскидать на все страницы (хедер)
+require_once 'api/helpers/getUserType.php';
+
+$userType = getUserType($DB);
+
+if ($userType === 'tech') {
+    echo "
+        <li><a href='tech.php'>Обращения пользователя</a></li>
+    ";
+}
+?>
             </ul>
             <a href="?do=logout" class="header__logout">Выйти</a>
         </div>
